@@ -5,6 +5,9 @@ defmodule CarParkWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Health check endpoint
+  get "/health", CarParkWeb.HealthController, :check
+
   scope "/carparks", CarParkWeb do
     pipe_through :api
 

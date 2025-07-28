@@ -21,20 +21,14 @@ if System.get_env("PHX_SERVER") do
 end
 
 if config_env() == :prod do
-  database_url =
-    System.get_env("DATABASE_URL") ||
-      raise """
-      environment variable DATABASE_URL is missing.
-      For example: ecto://USER:PASS@HOST/DATABASE
-      """
-
-  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
-
+  # Database configuration
   config :car_park, CarPark.Repo,
-    # ssl: true,
-    url: database_url,
+    username: System.get_env("DB_USER") || "postgres",
+    password: System.get_env("DB_PASSWORD") || "postgres",
+    hostname: System.get_env("DB_HOST") || "localhost",
+    database: System.get_env("DB_NAME") || "car_park_prod",
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    socket_options: maybe_ipv6
+    show_sensitive_data_on_connection_error: true
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
@@ -61,9 +55,9 @@ if config_env() == :prod do
       # See the documentation on https://hexdocs.pm/bandit/Bandit.html#t:options/0
       # for details about using IPv6 vs IPv4 and loopback vs public addresses.
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: port,
-      server: true
+      port: port
     ],
+    server: true,
     secret_key_base: secret_key_base
 
   # ## SSL Support

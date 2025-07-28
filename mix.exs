@@ -40,6 +40,15 @@ defmodule CarPark.MixProject do
     ]
   end
 
+  def releases do
+    [
+      car_park: [
+        include_executables_for: [:unix],
+        applications: [car_park: :permanent]
+      ]
+    ]
+  end
+
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
@@ -49,7 +58,6 @@ defmodule CarPark.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:tidewave, "~> 0.2", only: [:dev]},
       {:igniter, "~> 0.6", only: [:dev, :test]},
       {:phoenix, "~> 1.7.21"},
       {:phoenix_ecto, "~> 4.5"},
@@ -65,8 +73,8 @@ defmodule CarPark.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       {:csv, "~> 3.0"},
+      {:typed_ecto_schema, "~> 0.4.0"},
       # Development and test dependencies
-      {:typed_ecto_schema, "~> 0.4.0", only: [:dev, :test]},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_machina, "~> 2.7", only: :test},

@@ -1,0 +1,42 @@
+# Dependencies
+deps/
+_build/
+
+# Documentation
+docs/
+*.md
+
+# Test files
+test/
+priv/plts/
+
+# Development files
+.git/
+.gitignore
+.credo.exs
+dialyzer.ignore.exs
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Coverage
+cover/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Docker files (to avoid copying into container)
+Dockerfile*
+docker-compose*
+.dockerignore 
