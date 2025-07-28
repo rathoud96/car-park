@@ -49,6 +49,8 @@ defmodule CarPark.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:tidewave, "~> 0.2", only: [:dev]},
+      {:igniter, "~> 0.6", only: [:dev, :test]},
       {:phoenix, "~> 1.7.21"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},
@@ -62,10 +64,13 @@ defmodule CarPark.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
+      {:csv, "~> 3.0"},
       # Development and test dependencies
       {:typed_ecto_schema, "~> 0.4.0", only: [:dev, :test]},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:ex_machina, "~> 2.7", only: :test},
+      {:mox, "~> 1.1", only: :test}
     ]
   end
 
