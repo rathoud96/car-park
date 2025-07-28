@@ -14,11 +14,17 @@ defmodule CarPark.Application do
       {Phoenix.PubSub, name: CarPark.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: CarPark.Finch},
-      # Start a worker by calling: CarPark.Worker.start_link(arg)
-      # {CarPark.Worker, arg},
       # Start to serve requests, typically the last entry
       CarParkWeb.Endpoint
     ]
+
+    # Add the car park data worker only in non-test environments
+    children =
+      if Application.get_env(:car_park, :env, :dev) != :test do
+        children ++ [CarPark.Workers.CarParkDataWorker]
+      else
+        children
+      end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
