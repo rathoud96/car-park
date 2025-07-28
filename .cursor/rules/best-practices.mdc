@@ -1,0 +1,287 @@
+---
+description: Elixir/Phoenix Best Practices - Enforce idiomatic Elixir code with proper patterns, testing, and performance considerations
+globs: ["**/*.ex", "**/*.exs"]
+alwaysApply: true
+---
+
+# Elixir/Phoenix Development Rules
+
+You are an expert Elixir/Phoenix developer. Follow these strict guidelines when writing or reviewing code.
+
+## CORE ELIXIR PRINCIPLES
+
+### Code Style & Conventions
+
+- Use `snake_case` for all variables, functions, and module attributes
+- Use `PascalCase` for module names
+- Use `SCREAMING_SNAKE_CASE` for module constants
+- Prefer pattern matching over conditionals (`if`/`case` statements)
+- Use pipelines (`|>`) for data transformations
+- Keep functions small and focused (max 10-15 lines)
+- Use descriptive function names that clearly indicate purpose
+- Follow the "Tell, Don't Ask" principle
+
+### Typespecs (MANDATORY)
+
+- **EVERY public function MUST have a typespec**
+- Include typespecs for public module functions using `@spec`
+- Use descriptive type names and union types where appropriate
+- Example:
+
+```elixir
+@spec create_user(map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+def create_user(attrs) do
+  # implementation
+end
+```
+
+### Pattern Matching & Error Handling
+
+- Prefer pattern matching over `if` statements
+- Use `with` statements for chained operations that can fail
+- Always handle both success and error cases
+- Use tagged tuples `{:ok, result}` and `{:error, reason}`
+- Never use `!` functions in production code without explicit error handling
+
+## PHOENIX SPECIFIC RULES
+
+### Schema Design
+
+- **Schemas should ONLY contain data definition and changesets**
+- NO business logic in schema modules
+- Keep changesets focused and specific to their use case
+- Use embedded schemas for complex nested data
+- Example of what NOT to do:
+
+```elixir
+# ❌ BAD - business logic in schema
+def create_and_send_email(attrs) do
+  # This belongs in a context module
+end
+```
+
+### Context Pattern (MANDATORY)
+
+- **ALL business logic goes in context modules**
+- Keep controllers thin - they should only handle HTTP concerns
+- Context functions should be well-named and focused
+- Use contexts to encapsulate related functionality
+- Example structure:
+
+```elixir
+# In UserContext
+def create_user(attrs), do: # user creation logic
+def authenticate_user(email, password), do: # auth logic
+def update_profile(user, attrs), do: # update logic
+```
+
+### Controllers
+
+- Controllers should only handle:
+  - Parameter extraction and validation
+  - Calling context functions
+  - Handling responses and rendering
+- Keep controller actions under 10 lines when possible
+- Use `with` statements for controller logic flow
+
+### Database & Ecto
+
+- **PREVENT N+1 queries** - always check for proper preloading
+- Use `Repo.preload/2` or join queries with `preload` in Ecto queries
+- Write efficient queries - avoid loading unnecessary data
+- Use database constraints and let them fail gracefully
+- Example:
+
+```elixir
+# ❌ BAD - N+1 query
+users = Repo.all(User)
+Enum.map(users, fn user -> user.posts end)
+
+# ✅ GOOD - preload association
+users = User |> preload(:posts) |> Repo.all()
+```
+
+### LiveView Guidelines
+
+- **Use LiveView ONLY when interactivity is actually needed**
+- Prefer stateless pages and forms for simple cases
+- Keep LiveView state minimal
+- Use temporary assigns for large datasets
+- Handle disconnections gracefully
+
+## TESTING REQUIREMENTS (MANDATORY)
+
+### Test Coverage
+
+- **EVERY module with business logic MUST have tests**
+- Aim for 80%+ test coverage
+- Write tests BEFORE implementing features (TDD preferred)
+- Test both happy path and error cases
+- Use descriptive test names that explain the scenario
+
+### Test Structure
+
+- Use ExUnit for all testing
+- Prefer `ExMachina` or similar for test data factories
+- Group related tests using `describe` blocks
+- Use `setup` blocks for common test setup
+- Example:
+
+```elixir
+describe "create_user/1" do
+  test "creates user with valid attributes" do
+    # test implementation
+  end
+
+  test "returns error with invalid email" do
+    # test implementation
+  end
+end
+```
+
+### Test Types Required
+
+- Unit tests for context functions
+- Integration tests for controllers
+- Schema tests for changesets
+- LiveView tests for interactive components
+
+## CREDO COMPLIANCE (MANDATORY)
+
+### Code Quality Rules
+
+- Run `mix credo --strict` and fix ALL issues
+- No code duplication (DRY principle)
+- No functions longer than 15 lines
+- No modules longer than 200 lines
+- No deeply nested code (max 3 levels)
+- Use early returns to reduce nesting
+
+### Common Credo Issues to Avoid
+
+- Unused variables (prefix with `_` if intentionally unused)
+- Large modules (break into smaller, focused modules)
+- Complex functions (break into smaller functions)
+- Missing documentation for public functions
+
+## PERFORMANCE & SECURITY
+
+### Database Performance
+
+- Always use indexes for frequently queried fields
+- Use `Ecto.Query` for complex queries instead of Enum operations
+- Consider using `Repo.stream/1` for large datasets
+- Use database-level constraints and validations
+
+### Security Practices
+
+- Validate and sanitize ALL user input
+- Use parameterized queries (Ecto handles this)
+- Implement proper authentication and authorization
+- Never trust client-side data
+- Use HTTPS in production
+- Implement rate limiting for APIs
+
+### Memory & Process Management
+
+- Use `GenServer` for stateful processes
+- Use `Task` for fire-and-forget operations
+- Consider `GenStage` for complex data pipelines
+- Monitor process memory usage
+- Use supervisors for fault tolerance
+
+## DOCUMENTATION REQUIREMENTS
+
+### Function Documentation
+
+- Document ALL public functions with `@doc`
+- Include examples using `@doc` with code blocks
+- Document expected inputs and outputs
+- Mention any side effects or special behavior
+
+### Module Documentation
+
+- Every module should have a `@moduledoc`
+- Explain the module's purpose and main responsibilities
+- Include usage examples for complex modules
+
+## ERROR HANDLING PATTERNS
+
+### Preferred Patterns
+
+```elixir
+# ✅ GOOD - explicit error handling
+with {:ok, user} <- create_user(attrs),
+     {:ok, profile} <- create_profile(user, profile_attrs) do
+  {:ok, {user, profile}}
+else
+  {:error, %Ecto.Changeset{}} = error -> error
+  {:error, reason} -> {:error, reason}
+end
+
+# ✅ GOOD - pattern matching
+def handle_result({:ok, data}), do: process_success(data)
+def handle_result({:error, reason}), do: process_error(reason)
+```
+
+### Avoid These Patterns
+
+```elixir
+# ❌ BAD - using ! functions without error handling
+user = Repo.get!(User, id)
+
+# ❌ BAD - generic catch-all
+try do
+  risky_operation()
+catch
+  _ -> :error
+end
+```
+
+## CODE REVIEW CHECKLIST
+
+Before submitting code, verify:
+
+- [ ] All public functions have typespecs
+- [ ] No business logic in schemas
+- [ ] All business logic is in context modules
+- [ ] No N+1 queries (check preloading)
+- [ ] Tests written for all new functionality
+- [ ] Credo passes with no issues
+- [ ] Function names are descriptive and readable
+- [ ] Error cases are properly handled
+- [ ] Documentation is complete and accurate
+- [ ] No deeply nested code blocks
+- [ ] Performance implications considered
+
+## ANTI-PATTERNS TO AVOID
+
+### Common Mistakes
+
+- Putting business logic in controllers
+- Using schemas for business operations
+- Ignoring N+1 query problems
+- Missing error handling
+- Overly complex functions
+- Missing tests
+- Poor naming conventions
+- Coupling modules too tightly
+
+### Red Flags
+
+- Functions without typespecs
+- Controllers with business logic
+- Missing test coverage
+- Credo warnings/errors
+- N+1 queries in logs
+- Generic variable names (`x`, `data`, `result`)
+- Deep nesting (>3 levels)
+- Large functions (>15 lines)
+
+## WHEN IN DOUBT
+
+- Follow the principle of least surprise
+- Prefer explicit over implicit
+- Choose readability over cleverness
+- Write code that your future self will understand
+- When unsure, ask for a code review
