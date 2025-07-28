@@ -26,6 +26,9 @@ defmodule CarPark.Application do
         children
       end
 
+    # Always start the location cache (needed for tests)
+    children = children ++ [CarPark.Services.CarParkLocationCache]
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: CarPark.Supervisor]

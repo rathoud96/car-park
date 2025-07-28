@@ -3,7 +3,7 @@ defmodule CarPark.Services.CarParkLocationService do
   Service module for calculating distances and finding nearest car parks.
   """
 
-  @data_folder "data"
+  alias CarPark.Services.CarParkLocationCache
 
   @type car_park_location :: %{
           carpark_number: String.t(),
@@ -38,7 +38,7 @@ defmodule CarPark.Services.CarParkLocationService do
         }
 
   @doc """
-  Loads all car park locations from the CSV file.
+  Gets all car park locations from the cache.
 
   ## Examples
 
@@ -47,13 +47,7 @@ defmodule CarPark.Services.CarParkLocationService do
   """
   @spec load_car_park_locations() :: [car_park_location()]
   def load_car_park_locations do
-    csv_file_path = find_csv_file()
-
-    csv_file_path
-    |> File.stream!()
-    |> CSV.decode!(headers: true)
-    |> Enum.map(&parse_car_park_location/1)
-    |> Enum.filter(&valid_location?/1)
+    CarParkLocationCache.get_all_locations()
   end
 
   @doc """
@@ -132,51 +126,6 @@ defmodule CarPark.Services.CarParkLocationService do
 
   # Private functions
 
-  defp parse_car_park_location(row) do
-    # Convert SVY21 coordinates to WGS84 (latitude/longitude)
-    {latitude, longitude} =
-      convert_svy21_to_wgs84(
-        parse_float(row["x_coord"]),
-        parse_float(row["y_coord"])
-      )
-
-    %{
-      carpark_number: row["car_park_no"],
-      address: row["address"],
-      latitude: latitude,
-      longitude: longitude,
-      car_park_type: row["car_park_type"],
-      type_of_parking_system: row["type_of_parking_system"],
-      short_term_parking: row["short_term_parking"],
-      free_parking: row["free_parking"],
-      night_parking: row["night_parking"],
-      car_park_decks: parse_integer(row["car_park_decks"]),
-      gantry_height: parse_float(row["gantry_height"]),
-      car_park_basement: row["car_park_basement"]
-    }
-  end
-
-  defp convert_svy21_to_wgs84(x_coord, y_coord) do
-    # This is a simplified conversion - in production you'd want a more accurate conversion
-    # For now, we'll use a rough approximation based on Singapore's coordinate system
-    # SVY21 to WGS84 conversion for Singapore
-    # This is a simplified version - actual conversion would be more complex
-
-    # Approximate conversion factors for Singapore
-    # These are rough estimates and should be replaced with proper conversion
-    latitude = 1.3521 + (y_coord - 30_000) / 1_000_000
-    longitude = 103.8198 + (x_coord - 20_000) / 1_000_000
-
-    {latitude, longitude}
-  end
-
-  defp valid_location?(location) do
-    location.latitude != nil and
-      location.longitude != nil and
-      location.carpark_number != nil and
-      location.address != nil
-  end
-
   defp add_distance_to_location(location, target_lat, target_lon) do
     distance = calculate_distance(target_lat, target_lon, location.latitude, location.longitude)
     Map.put(location, :distance, distance)
@@ -204,39 +153,6 @@ defmodule CarPark.Services.CarParkLocationService do
       total_lots: latest_data.total_lots,
       available_lots: latest_data.available_lots
     }
-  end
-
-  defp parse_float(value) when is_binary(value) do
-    case Float.parse(value) do
-      {float, _} -> float
-      :error -> nil
-    end
-  end
-
-  defp parse_float(_), do: nil
-
-  defp parse_integer(value) when is_binary(value) do
-    case Integer.parse(value) do
-      {int, _} -> int
-      :error -> 0
-    end
-  end
-
-  defp parse_integer(_), do: 0
-
-  defp find_csv_file do
-    case File.ls(@data_folder) do
-      {:ok, files} ->
-        csv_files = Enum.filter(files, &String.ends_with?(&1, ".csv"))
-
-        case csv_files do
-          [csv_file | _] -> Path.join(@data_folder, csv_file)
-          [] -> raise "No CSV files found in #{@data_folder} directory"
-        end
-
-      {:error, reason} ->
-        raise "Cannot read #{@data_folder} directory: #{inspect(reason)}"
-    end
   end
 
   defp has_available_slots?(car_park) do
