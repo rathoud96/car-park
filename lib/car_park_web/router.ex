@@ -5,8 +5,11 @@ defmodule CarParkWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api", CarParkWeb do
+  scope "/carparks", CarParkWeb do
     pipe_through :api
+
+    # Nearest car parks endpoint
+    get "/nearest", CarParkController, :nearest
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
