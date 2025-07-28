@@ -31,3 +31,15 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Configure Mox for mocking in tests
+config :car_park, :car_park_api_service, CarParkApiServiceMock
+
+# Set environment to test for Dialyzer compatibility
+config :car_park, :env, :test
+
+# Configure Mox mocks
+config :mox,
+  mocks: [
+    {CarParkApiServiceMock, CarPark.ExternalServices.CarParkApiBehaviour}
+  ]

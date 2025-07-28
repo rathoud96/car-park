@@ -11,6 +11,10 @@ config :car_park,
   ecto_repos: [CarPark.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+# External API configuration
+config :car_park, :external_apis,
+  car_park_availability_url: "https://api.data.gov.sg/v1/transport/carpark-availability"
+
 # Configures the endpoint
 config :car_park, CarParkWeb.Endpoint,
   url: [host: "localhost"],

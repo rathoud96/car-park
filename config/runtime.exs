@@ -61,7 +61,8 @@ if config_env() == :prod do
       # See the documentation on https://hexdocs.pm/bandit/Bandit.html#t:options/0
       # for details about using IPv6 vs IPv4 and loopback vs public addresses.
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: port
+      port: port,
+      server: true
     ],
     secret_key_base: secret_key_base
 
@@ -114,4 +115,14 @@ if config_env() == :prod do
   #     config :swoosh, :api_client, Swoosh.ApiClient.Hackney
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
+
+  # ## External API Configuration
+  #
+  # Configure external API URLs from environment variables in production
+  # This allows for different API endpoints in different environments
+  car_park_api_url =
+    System.get_env("CAR_PARK_API_URL") ||
+      "https://api.data.gov.sg/v1/transport/carpark-availability"
+
+  config :car_park, :external_apis, car_park_availability_url: car_park_api_url
 end
