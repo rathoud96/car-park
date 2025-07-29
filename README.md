@@ -272,6 +272,24 @@ mix ecto.reset
 3. **Query**: `CarParkLocationService` queries database for nearest car parks
 4. **API Response**: `CarParkController` formats and returns JSON responses
 
+## Tradeoffs
+
+This application makes several key design decisions that balance performance, data freshness, and complexity:
+
+### Memory Usage vs. Response Time
+
+**In-memory location cache provides sub-100ms responses but requires 50-100MB RAM per instance**
+
+### Data Freshness vs. Performance
+
+**Startup-only data updates ensure consistent performance but data can be hours old**
+
+### Database Performance vs. Query Complexity
+
+**Missing composite index on (carpark_number, update_datetime DESC) for latest data queries**
+
+**No pagination indexes for large result sets could cause performance degradation**
+
 ## Deployment
 
 ### Production Considerations
