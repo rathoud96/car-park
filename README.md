@@ -290,6 +290,10 @@ This application makes several key design decisions that balance performance, da
 
 **No pagination indexes for large result sets could cause performance degradation**
 
+### Coordinate Accuracy vs. Dependency Simplicity
+
+**Custom SVY21 to WGS84 conversion avoids external dependencies but may have accuracy limitations**
+
 ## Deployment
 
 ### Production Considerations
