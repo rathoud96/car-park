@@ -94,9 +94,9 @@ defmodule CarPark.Services.CarParkLocationServiceTest do
     end
   end
 
-  describe "load_car_park_locations/0" do
+  describe "get_all_locations/0" do
     test "loads car park locations from CSV" do
-      locations = CarParkLocationService.load_car_park_locations()
+      locations = CarPark.Services.CarParkLocationCache.get_all_locations()
 
       assert is_list(locations)
       assert length(locations) > 0

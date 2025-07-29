@@ -129,20 +129,6 @@ defmodule CarPark.CarParkDataContext do
   end
 
   @doc """
-  Deletes a car park data record.
-
-  ## Examples
-
-      iex> delete_car_park_data(car_park_data)
-      {:ok, %CarParkData{}}
-  """
-  @spec delete_car_park_data(CarParkData.t()) ::
-          {:ok, CarParkData.t()} | {:error, Ecto.Changeset.t()}
-  def delete_car_park_data(%CarParkData{} = car_park_data) do
-    Repo.delete(car_park_data)
-  end
-
-  @doc """
   Deletes all car park data records.
   This function is primarily used for testing purposes.
 

@@ -38,19 +38,6 @@ defmodule CarPark.Services.CarParkLocationService do
         }
 
   @doc """
-  Gets all car park locations from the cache.
-
-  ## Examples
-
-      iex> load_car_park_locations()
-      [%{carpark_number: "A1", address: "BLK 215 ANG MO KIO STREET 22", ...}, ...]
-  """
-  @spec load_car_park_locations() :: [car_park_location()]
-  def load_car_park_locations do
-    CarParkLocationCache.get_all_locations()
-  end
-
-  @doc """
   Finds the nearest car parks to a given location with pagination metadata.
 
   ## Examples
@@ -60,7 +47,7 @@ defmodule CarPark.Services.CarParkLocationService do
   """
   @spec find_nearest_car_parks(float(), float(), integer(), integer()) :: paginated_response()
   def find_nearest_car_parks(latitude, longitude, page, per_page) do
-    locations = load_car_park_locations()
+    locations = CarParkLocationCache.get_all_locations()
 
     # Extract carpark numbers for bulk query
     carpark_numbers = Enum.map(locations, & &1.carpark_number)
